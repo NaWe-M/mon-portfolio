@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ewan Metza — SISR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12141a;
+    --panel:#1a1e26;
+    --panel-2:#20242e;
+    --line:#2a2f3a;
+    --text:#e7e9ee;
+    --muted:#8a93a6;
+    --amber:#e8a33d;
+    --cyan:#4fd1c5;
+    --mono:'JetBrains Mono', monospace;
+    --sans:'Inter', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.6;
+  }
+  a{color:inherit;}
+  ::selection{background:var(--amber);color:#12141a;}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px;}
+
+  /* NAV */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    background:rgba(18,20,26,0.85);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px;}
+  .logo{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--amber);letter-spacing:0.5px;}
+  .navlinks{display:flex;gap:24px;font-family:var(--mono);font-size:12px;text-transform:lowercase;}
+  .navlinks a{color:var(--muted);text-decoration:none;transition:color .2s;}
+  .navlinks a:hover{color:var(--cyan);}
+  .navlinks a::before{content:"./";color:var(--line);}
+
+  /* HERO */
+  header.hero{padding:140px 0 80px;}
+  .prompt{font-family:var(--mono);font-size:13px;color:var(--cyan);margin-bottom:18px;}
+  .prompt .caret{display:inline-block;width:8px;height:14px;background:var(--cyan);animation:blink 1s step-end infinite;vertical-align:-2px;margin-left:2px;}
+  @keyframes blink{50%{opacity:0;}}
+  h1{
+    font-family:var(--mono);font-weight:800;
+    font-size:clamp(30px,5vw,52px);
+    line-height:1.1;
+    letter-spacing:-1px;
+  }
+  h1 .accent{color:var(--amber);}
+  .tagline{font-size:17px;color:var(--muted);margin-top:16px;max-width:560px;}
+  .hero-meta{
+    margin-top:28px;display:flex;gap:22px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:12px;color:var(--muted);
+  }
+  .hero-meta span::before{content:"— ";color:var(--line);}
+
+  /* TOPOLOGY - signature element */
+  .topo-section{padding:20px 0 90px;}
+  .topo-label{font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:10px;}
+  .topo-label b{color:var(--amber);}
+  .topo-box{
+    background:var(--panel);border:1px solid var(--line);border-radius:6px;
+    padding:24px;
+  }
+  svg.topo{width:100%;height:auto;display:block;}
+  .node-rect{fill:var(--panel-2);stroke:var(--line);stroke-width:1;cursor:pointer;transition:stroke .2s, fill .2s;}
+  .node-rect:hover, .node-rect.active{stroke:var(--amber);fill:#262b36;}
+  .node-label{font-family:var(--mono);font-size:11px;fill:var(--text);pointer-events:none;}
+  .node-sub{font-family:var(--mono);font-size:9px;fill:var(--muted);pointer-events:none;}
+  .topo-line{stroke:var(--line);stroke-width:1.5;}
+  .tier-tag{font-family:var(--mono);font-size:9px;fill:var(--cyan);pointer-events:none;}
+
+  .topo-detail{
+    margin-top:20px;padding:16px 18px;background:var(--panel-2);
+    border-left:2px solid var(--amber);border-radius:2px;
+    font-size:14px;color:var(--muted);display:none;
+  }
+  .topo-detail.show{display:block;}
+  .topo-detail b{color:var(--text);}
+
+  /* SECTIONS GENERAL */
+  section{padding:70px 0;border-top:1px solid var(--line);}
+  .eyebrow{font-family:var(--mono);font-size:12px;color:var(--amber);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;}
+  h2{font-family:var(--mono);font-size:26px;font-weight:700;margin-bottom:26px;}
+
+  /* ABOUT */
+  .about-text{max-width:640px;font-size:15.5px;color:#cfd3dc;}
+  .about-text p + p{margin-top:14px;}
+
+  /* PROJECTS */
+  .project{
+    background:var(--panel);border:1px solid var(--line);border-radius:6px;
+    padding:22px 24px;margin-bottom:18px;
+  }
+  .project h3{font-family:var(--mono);font-size:16px;margin-bottom:8px;color:var(--text);}
+  .project .stack{font-family:var(--mono);font-size:11px;color:var(--cyan);margin-bottom:12px;}
+  .project ul{margin-left:18px;color:#cfd3dc;font-size:14px;}
+  .project ul li{margin-bottom:5px;}
+  .project a.link{
+    display:inline-block;margin-top:12px;font-family:var(--mono);font-size:12px;
+    color:var(--amber);text-decoration:none;border-bottom:1px solid transparent;
+  }
+  .project a.link:hover{border-bottom-color:var(--amber);}
+
+  /* SKILLS - nmap-style scan output */
+  .scan{
+    background:#0e1015;border:1px solid var(--line);border-radius:6px;
+    padding:20px 22px;font-family:var(--mono);font-size:12.5px;overflow-x:auto;
+  }
+  .scan-head{color:var(--muted);margin-bottom:10px;}
+  .scan-row{display:grid;grid-template-columns:80px 1fr 90px;gap:14px;padding:5px 0;border-bottom:1px solid #1c202a;}
+  .scan-row:last-child{border-bottom:none;}
+  .scan-port{color:var(--cyan);}
+  .scan-state{color:var(--amber);text-align:right;}
+
+  /* PARCOURS */
+  .timeline{position:relative;padding-left:24px;}
+  .timeline::before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:1px;background:var(--line);}
+  .tl-item{position:relative;padding-bottom:26px;}
+  .tl-item:last-child{padding-bottom:0;}
+  .tl-item::before{content:"";position:absolute;left:-24px;top:4px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--amber);}
+  .tl-item h4{font-family:var(--mono);font-size:14px;color:var(--text);margin-bottom:4px;}
+  .tl-item p{font-size:14px;color:var(--muted);}
+
+  /* CONTACT */
+  .contact-box{
+    background:var(--panel);border:1px solid var(--line);border-radius:6px;
+    padding:26px 28px;font-family:var(--mono);font-size:13.5px;
+  }
+  .contact-box .line{margin-bottom:8px;color:var(--muted);}
+  .contact-box .line span{color:var(--text);}
+  .contact-box a{color:var(--cyan);text-decoration:none;}
+  .contact-box a:hover{text-decoration:underline;}
+
+  footer{padding:26px 0 50px;font-family:var(--mono);font-size:11px;color:var(--line);text-align:center;}
+
+  @media(max-width:640px){
+    .navlinks{gap:14px;}
+    header.hero{padding:120px 0 50px;}
+    .scan-row{grid-template-columns:60px 1fr 70px;font-size:11px;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .prompt .caret{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo">EM/sisr</div>
+    <div class="navlinks">
+      <a href="#about">about</a>
+      <a href="#projects">projets</a>
+      <a href="#skills">skills</a>
+      <a href="#parcours">parcours</a>
+      <a href="#contact">contact</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="prompt">ewan@labo:~$ whoami<span class="caret"></span></div>
+    <h1>Ewan Metza<br><span class="accent">Systèmes, Réseaux &amp; Infrastructures</span></h1>
+    <p class="tagline">Futur étudiant BTS SIO option SISR en alternance (Paris — sept. 2026). Objectif : cybersécurité et pentest par la maîtrise de l'infrastructure.</p>
+    <div class="hero-meta">
+      <span>Fontenay-sous-Bois (94)</span>
+      <span>Île-de-France</span>
+      <span>Disponible pour alternance</span>
+    </div>
+  </div>
+</header>
+
+<div class="topo-section">
+  <div class="wrap">
+    <div class="topo-label">Cliquez sur un nœud — <b>labo.local</b>, infrastructure réseau à 3 paliers montée sous VirtualBox (32 Go RAM)</div>
+    <div class="topo-box">
+      <svg class="topo" viewBox="0 0 780 260" xmlns="http://www.w3.org/2000/svg">
+        <!-- connecting lines -->
+        <line class="topo-line" x1="150" y1="130" x2="360" y2="60"/>
+        <line class="topo-line" x1="150" y1="130" x2="360" y2="130"/>
+        <line class="topo-line" x1="150" y1="130" x2="360" y2="200"/>
+        <line class="topo-line" x1="470" y1="60" x2="630" y2="60"/>
+        <line class="topo-line" x1="470" y1="130" x2="630" y2="130"/>
+        <line class="topo-line" x1="470" y1="200" x2="630" y2="200"/>
+
+        <!-- palier tags -->
+        <text x="360" y="30" class="tier-tag">PALIER 1</text>
+        <text x="360" y="235" class="tier-tag">PALIER 2</text>
+        <text x="630" y="30" class="tier-tag">PALIER 3</text>
+
+        <!-- gateway node -->
+        <g class="node" data-node="gw">
+          <rect class="node-rect" x="40" y="105" width="110" height="50" rx="4"/>
+          <text x="55" y="127" class="node-label">NAT / DHCP</text>
+          <text x="55" y="142" class="node-sub">passerelle</text>
+        </g>
+
+        <!-- ubuntu server 1 -->
+        <g class="node" data-node="u1">
+          <rect class="node-rect" x="360" y="35" width="110" height="50" rx="4"/>
+          <text x="375" y="57" class="node-label">ubuntu-01</text>
+          <text x="375" y="72" class="node-sub">IP statique / netplan</text>
+        </g>
+
+        <!-- samba server -->
+        <g class="node" data-node="samba">
+          <rect class="node-rect" x="360" y="105" width="110" height="50" rx="4"/>
+          <text x="375" y="127" class="node-label">samba-fs</text>
+          <text x="375" y="142" class="node-sub">partage fichiers</text>
+        </g>
+
+        <!-- ubuntu server 2 (client) -->
+        <g class="node" data-node="u2">
+          <rect class="node-rect" x="360" y="175" width="110" height="50" rx="4"/>
+          <text x="375" y="197" class="node-label">ubuntu-02</text>
+          <text x="375" y="212" class="node-sub">client Samba</text>
+        </g>
+
+        <!-- AD DC -->
+        <g class="node" data-node="ad">
+          <rect class="node-rect" x="630" y="35" width="120" height="50" rx="4"/>
+          <text x="645" y="57" class="node-label">WIN-DC01</text>
+          <text x="645" y="72" class="node-sub">AD DS · labo.local</text>
+        </g>
+
+        <!-- joined client -->
+        <g class="node" data-node="join">
+          <rect class="node-rect" x="630" y="105" width="120" height="50" rx="4"/>
+          <text x="645" y="127" class="node-label">ubuntu-ad</text>
+          <text x="645" y="142" class="node-sub">realmd / sssd</text>
+        </g>
+
+        <!-- DNS fix node -->
+        <g class="node" data-node="dns">
+          <rect class="node-rect" x="630" y="175" width="120" height="50" rx="4"/>
+          <text x="645" y="197" class="node-label">resolv.conf</text>
+          <text x="645" y="212" class="node-sub">DNS statique</text>
+        </g>
+      </svg>
+
+      <div class="topo-detail" id="topo-detail">
+        <span id="topo-detail-text"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="about">
+  <div class="wrap">
+    <div class="eyebrow">01 — profil</div>
+    <h2>À propos</h2>
+    <div class="about-text">
+      <p>Après une Licence Physique à l'UPEC, j'ai bifurqué vers l'informatique par curiosité — apprendre en construisant plutôt qu'en mémorisant. Cette bifurcation m'a mené vers l'administration systèmes et réseaux, avec un objectif clair : évoluer vers la cybersécurité et le pentest en passant d'abord par une maîtrise solide de l'infrastructure.</p>
+      <p>Je démarre en septembre 2026 un BTS SIO option SISR en alternance à Paris.</p>
+    </div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="wrap">
+    <div class="eyebrow">02 — travaux</div>
+    <h2>Projets</h2>
+
+    <div class="project">
+      <h3>Labo réseau trois paliers — labo.local</h3>
+      <div class="stack">VirtualBox · Ubuntu Server · Windows Server 2022 · Samba · Active Directory · Kerberos</div>
+      <ul>
+        <li>Palier 1 — VM Ubuntu Server avec adressage IP statique configuré via netplan</li>
+        <li>Palier 2 — Serveur de fichiers Samba avec accès inter-VM</li>
+        <li>Palier 3 — Contrôleur de domaine Windows Server 2022 (AD DS, domaine labo.local), VMs Ubuntu jointes au domaine via realmd/sssd avec authentification Kerberos</li>
+        <li>Débogage réseau : conflit DNS causé par le résolveur stub de systemd-resolved en présence de l'adaptateur NAT — résolu en désactivant systemd-resolved et en écrivant un /etc/resolv.conf statique</li>
+        <li>GPO de message de connexion créée, liaison et déploiement en cours</li>
+      </ul>
+    </div>
+
+    <div class="project">
+      <h3>StockMaster Pro</h3>
+      <div class="stack">Python · Tkinter · openpyxl</div>
+      <ul>
+        <li>Application de gestion de stock avec interface graphique Tkinter et export/lecture Excel via openpyxl</li>
+      </ul>
+      <a class="link" href="https://github.com/NaWe-M/Projet_Gestion" target="_blank" rel="noopener">→ github.com/NaWe-M/Projet_Gestion</a>
+    </div>
+
+    <div class="project">
+      <h3>Bases du développement web</h3>
+      <div class="stack">HTML · CSS · JavaScript</div>
+      <ul>
+        <li>Exploration des fondamentaux du front-end à travers un projet concret</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="wrap">
+    <div class="eyebrow">03 — compétences</div>
+    <h2>Compétences</h2>
+    <div class="scan">
+      <div class="scan-head">$ nmap --skills ewan.metza</div>
+      <div class="scan-row"><span class="scan-port">22/tcp</span><span>Administration Linux — Ubuntu Server</span><span class="scan-state">open</span></div>
+      <div class="scan-row"><span class="scan-port">389/tcp</span><span>Windows Server / Active Directory</span><span class="scan-state">open</span></div>
+      <div class="scan-row"><span class="scan-port">53/tcp</span><span>Réseau : IP statique, netplan, DNS</span><span class="scan-state">open</span></div>
+      <div class="scan-row"><span class="scan-port">445/tcp</span><span>Partage de fichiers Samba</span><span class="scan-state">open</span></div>
+      <div class="scan-row"><span class="scan-port">88/tcp</span><span>Authentification Kerberos (realmd/sssd)</span><span class="scan-state">open</span></div>
+      <div class="scan-row"><span class="scan-port">—</span><span>Virtualisation VirtualBox</span><span class="scan-state">open</span></div>
+      <div class="scan-row"><span class="scan-port">—</span><span>Python (Tkinter, openpyxl)</span><span class="scan-state">open</span></div>
+      <div class="scan-row"><span class="scan-port">—</span><span>Git / GitHub</span><span class="scan-state">open</span></div>
+      <div class="scan-row"><span class="scan-port">—</span><span>HTML / CSS / JavaScript (bases)</span><span class="scan-state">filtered</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="parcours">
+  <div class="wrap">
+    <div class="eyebrow">04 — parcours</div>
+    <h2>Parcours</h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <h4>Licence Physique — UPEC</h4>
+        <p>Formation initiale, avant la bifurcation vers l'informatique.</p>
+      </div>
+      <div class="tl-item">
+        <h4>Bifurcation vers l'IT</h4>
+        <p>Apprentissage autodidacte et par la pratique — construction du labo réseau labo.local.</p>
+      </div>
+      <div class="tl-item">
+        <h4>BTS SIO option SISR (sept. 2026)</h4>
+        <p>Alternance à Paris.</p>
+      </div>
+      <div class="tl-item">
+        <h4>Objectif — Cybersécurité &amp; Pentest</h4>
+        <p>Spécialisation visée après consolidation des fondamentaux systèmes et réseaux.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="eyebrow">05 — contact</div>
+    <h2>Contact</h2>
+    <div class="contact-box">
+      <div class="line">$ cat contact.txt</div>
+      <div class="line">email  <span><a href="mailto:ewan.metza2007@gmail.com">ewan.metza2007@gmail.com</a></span></div>
+      <div class="line">tel    <span>07 77 46 32 71</span></div>
+      <div class="line">github <span><a href="https://github.com/NaWe-M" target="_blank" rel="noopener">github.com/NaWe-M</a></span></div>
+      <div class="line">linkedin <span><a href="https://linkedin.com/in/ewanmetza" target="_blank" rel="noopener">linkedin.com/in/ewanmetza</a></span></div>
+    </div>
+  </div>
+</section>
+
+<footer>© 2026 Ewan Metza — build with HTML/CSS/JS</footer>
+
+<script>
+  const details = {
+    gw: "<b>NAT / DHCP</b> — passerelle du réseau virtuel, point d'entrée de la topologie.",
+    u1: "<b>ubuntu-01</b> — Palier 1 : Ubuntu Server avec adressage IP statique configuré via netplan.",
+    samba: "<b>samba-fs</b> — Palier 2 : serveur de fichiers Samba, accès validé depuis plusieurs VM.",
+    u2: "<b>ubuntu-02</b> — client accédant au partage Samba pour valider l'accès inter-VM.",
+    ad: "<b>WIN-DC01</b> — Palier 3 : Windows Server 2022, contrôleur de domaine Active Directory pour labo.local.",
+    join: "<b>ubuntu-ad</b> — VM Ubuntu jointe au domaine via realmd/sssd, authentification Kerberos fonctionnelle.",
+    dns: "<b>resolv.conf statique</b> — correctif d'un conflit DNS : le résolveur stub de systemd-resolved entrait en conflit avec l'adaptateur NAT. Résolu en désactivant systemd-resolved et en fixant /etc/resolv.conf."
+  };
+  const detailBox = document.getElementById('topo-detail');
+  const detailText = document.getElementById('topo-detail-text');
+  document.querySelectorAll('.node').forEach(node => {
+    node.addEventListener('click', () => {
+      document.querySelectorAll('.node-rect').forEach(r => r.classList.remove('active'));
+      node.querySelector('.node-rect').classList.add('active');
+      detailText.innerHTML = details[node.getAttribute('data-node')];
+      detailBox.classList.add('show');
+    });
+  });
+</script>
+
+</body>
+</html>
